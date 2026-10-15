@@ -1,0 +1,1143 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Handyverträge</title>
+<meta name="apple-mobile-web-app-title" content="Handyverträge">
+<meta name="application-name" content="Handyverträge">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0d6a73">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Public+Sans:wght@400;500;600&family=Schibsted+Grotesk:wght@600;700&display=swap">
+<style>
+/* Layout: eine Seite mit zwei Reitern. Verträge als Liste nach Kündigungsfrist, Posts als Spalten nach Status. */
+:root {
+  --bg: #f1f4f6;
+  --surface: #ffffff;
+  --ink: #14202b;
+  --muted: #5a6b79;
+  --line: #dce3e9;
+  --accent: #0d6a73;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcf0f1;
+  --ok: #1d7a4b;
+  --ok-soft: #dcf3e6;
+  --warn: #8f5500;
+  --warn-soft: #fbebc8;
+  --bad: #b3261e;
+  --bad-soft: #fde3e0;
+  --mute-soft: #e6ebef;
+  --font-display: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --shadow: 0 12px 40px rgba(20, 32, 43, 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e151b;
+    --surface: #16202a;
+    --ink: #e5ecf1;
+    --muted: #93a4b2;
+    --line: #26343f;
+    --accent: #52c4cb;
+    --accent-ink: #062428;
+    --accent-soft: #123a3e;
+    --ok: #62d09a;
+    --ok-soft: #123223;
+    --warn: #f0b652;
+    --warn-soft: #3b2c0d;
+    --bad: #ff9489;
+    --bad-soft: #401a16;
+    --mute-soft: #223039;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e151b;
+  --surface: #16202a;
+  --ink: #e5ecf1;
+  --muted: #93a4b2;
+  --line: #26343f;
+  --accent: #52c4cb;
+  --accent-ink: #062428;
+  --accent-soft: #123a3e;
+  --ok: #62d09a;
+  --ok-soft: #123223;
+  --warn: #f0b652;
+  --warn-soft: #3b2c0d;
+  --bad: #ff9489;
+  --bad-soft: #401a16;
+  --mute-soft: #223039;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-inline: clamp(16px, 4vw, 40px);
+  padding-block: 28px 64px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+
+/* Kopf */
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+h1 { font-family: var(--font-display); font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 4px 0 0; letter-spacing: -0.02em; text-wrap: balance; }
+.today { font-family: var(--font-data); font-size: 13px; color: var(--muted); }
+.note { margin: 16px 0 0; padding: 10px 14px; background: var(--warn-soft); color: var(--warn); border-radius: 6px; font-size: 13.5px; }
+
+/* Reiter */
+.tabs { display: flex; gap: 4px; margin-top: 24px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { background: none; border: 0; padding: 10px 16px; color: var(--muted); font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .count { font-family: var(--font-data); font-size: 12px; margin-left: 6px; color: var(--muted); }
+
+/* Kennzahlen */
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.stat { padding: 16px 18px; min-width: 0; }
+.stat + .stat { border-left: 1px solid var(--line); }
+.stat .lbl { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.stat .val { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat .sub { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(3) { border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+
+/* Werkzeugleiste */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; align-items: center; }
+.toolbar .grow { flex: 1 1 220px; min-width: 0; }
+input[type="text"], input[type="search"], input[type="number"], input[type="date"], input[type="time"], input[type="url"], select, textarea {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; min-width: 0;
+}
+textarea { resize: vertical; min-height: 120px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 9px 14px; font-weight: 600; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--bad); }
+.btn.danger.armed { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.btn.small { padding: 5px 10px; font-size: 13px; }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+
+/* Vertragsliste */
+.list { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.row {
+  display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) auto;
+  gap: 6px 18px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--line);
+}
+.row.head { border-top: 0; background: var(--mute-soft); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-block: 9px; }
+.row .name { min-width: 0; }
+.linkish { background: none; border: 0; padding: 0; text-align: left; font-weight: 600; font-size: 15.5px; color: var(--ink); overflow-wrap: anywhere; }
+.linkish:hover { color: var(--accent); text-decoration: underline; }
+.meta { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.num { font-variant-numeric: tabular-nums; }
+.money { font-weight: 600; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.mute { background: var(--mute-soft); color: var(--muted); }
+.pill.acc { background: var(--accent-soft); color: var(--accent); }
+.tag { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-left: 6px; vertical-align: 2px; }
+.cell-l { display: none; }
+.actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 760px) {
+  .row.head { display: none; }
+  .row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row .name { grid-column: 1 / -1; }
+  .row .actions { grid-column: 1 / -1; }
+  .cell-l { display: block; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+}
+
+.empty { padding: 36px 20px; text-align: center; color: var(--muted); }
+.empty h3 { font-family: var(--font-display); font-size: 18px; margin: 0 0 6px; color: var(--ink); }
+.empty p { margin: 0 auto 16px; max-width: 46ch; }
+.empty .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* Post-Board */
+.board { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; align-items: start; }
+.col { background: var(--mute-soft); border-radius: 8px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.col h3 { margin: 4px 6px 2px; font-family: var(--font-display); font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+.col h3 .n { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card .ttl { font-weight: 600; overflow-wrap: anywhere; }
+.card .snip { font-size: 13.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.card .when { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.card .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.card a { color: var(--accent); font-size: 13px; overflow-wrap: anywhere; }
+.col .none { font-size: 13px; color: var(--muted); padding: 6px; }
+
+/* Bilder */
+.thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 4px; flex: none; background: var(--mute-soft); }
+.cover { width: 100%; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 4px; background: var(--mute-soft); display: block; }
+
+/* Anstehendes */
+.due { margin-top: 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.due h2 { margin: 0; padding: 10px 16px; font-family: var(--font-display); font-size: 14px; background: var(--warn-soft); color: var(--warn); border-radius: 7px 7px 0 0; }
+.due ul { list-style: none; margin: 0; padding: 0; }
+.due li { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); }
+.due li:first-child { border-top: 0; }
+.due .what { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; }
+.due .what b { font-weight: 600; }
+.due .fine { padding: 8px 16px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); }
+
+/* Dokumente im Formular */
+.lbl-s { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.docs { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.doc { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px 5px 10px; }
+.doc a { color: var(--accent); font-weight: 500; font-size: 14px; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* Bearbeiten-Fenster */
+.scrim { position: fixed; inset: 0; background: rgba(8, 14, 20, 0.5); z-index: 20; }
+.sheet {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(500px, 100%); background: var(--surface); z-index: 21;
+  display: flex; flex-direction: column; box-shadow: var(--shadow);
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.sheet header { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sheet header h2 { font-family: var(--font-display); font-size: 20px; margin: 0; }
+.sheet form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.fields { padding: 18px 20px; overflow-y: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-content: start; flex: 1; }
+.fields .full { grid-column: 1 / -1; }
+.fields label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); min-width: 0; }
+.fields label.check { flex-direction: row; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; font-size: 14px; }
+.fields input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; }
+.counter { font-family: var(--font-data); font-size: 12px; font-weight: 500; text-align: right; }
+.counter.over { color: var(--bad); }
+.foot { padding: 14px 20px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.foot .sp { flex: 1; }
+.err { color: var(--bad); font-size: 13px; min-height: 1.2em; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 6px; font-size: 14px; z-index: 40; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: no-preference) {
+  .sheet { animation: slide 0.18s ease-out; }
+  @keyframes slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Persönliche Verwaltung</div>
+      <h1>Handyverträge</h1>
+    </div>
+    <div class="topright"><div class="today" id="today"></div><div class="btnrow" style="margin-top:6px"><button class="btn small" type="button" id="bk-save">Sicherung speichern</button><button class="btn small" type="button" id="bk-load">Sicherung laden</button><input type="file" id="bk-file" accept=".json,application/json" hidden></div></div>
+  </div>
+  <p class="note" id="note" hidden></p>
+  <section class="due" id="due" aria-label="Steht an" hidden></section>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-vertraege" aria-selected="true" aria-controls="panel-vertraege">Verträge<span class="count" id="cnt-c">0</span></button>
+    <button class="tab" role="tab" id="tab-posts" aria-selected="false" aria-controls="panel-posts">Posts<span class="count" id="cnt-p">0</span></button>
+  </div>
+
+  <section id="panel-vertraege" role="tabpanel" aria-labelledby="tab-vertraege">
+    <div class="summary" id="c-summary"></div>
+    <div class="toolbar">
+      <div class="grow"><input type="search" id="c-search" placeholder="Vertrag, Anbieter oder Kategorie suchen" aria-label="Verträge durchsuchen"></div>
+      <select id="c-filter" aria-label="Nach Status filtern" style="width:auto">
+        <option value="">Alle Status</option>
+        <option value="aktiv">Aktiv</option>
+        <option value="gekuendigt">Gekündigt</option>
+        <option value="beendet">Beendet</option>
+      </select>
+      <button class="btn" id="c-export" type="button">CSV exportieren</button>
+      <button class="btn ghost" id="c-clear" type="button" hidden>Beispiele entfernen</button>
+      <button class="btn primary" id="c-new" type="button">Neuer Vertrag</button>
+    </div>
+    <div class="list" id="c-list"></div>
+  </section>
+
+  <section id="panel-posts" role="tabpanel" aria-labelledby="tab-posts" hidden>
+    <div class="toolbar" style="margin-top:24px">
+      <div class="grow"><input type="search" id="p-search" list="p-names" placeholder="Post suchen, Namen eingeben und Enter drücken" aria-label="Posts durchsuchen"><datalist id="p-names"></datalist></div>
+      <select id="p-filter" aria-label="Nach Plattform filtern" style="width:auto"></select>
+      <button class="btn" id="p-export" type="button">CSV exportieren</button>
+      <button class="btn ghost" id="p-clear" type="button" hidden>Beispiele entfernen</button>
+      <button class="btn primary" id="p-new" type="button">Neuer Post</button>
+    </div>
+    <div id="p-board"></div>
+  </section>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <header>
+    <h2 id="sheet-title">Vertrag</h2>
+    <button class="btn small ghost" type="button" id="sheet-close" aria-label="Schließen">Schließen</button>
+  </header>
+
+  <form id="form-c" hidden>
+    <div class="fields">
+      <label class="full">Name des Vertrags<input type="text" id="c-name" required placeholder="z. B. Handyvertrag"></label>
+      <label>Anbieter<input type="text" id="c-anbieter"></label>
+      <label>Kategorie
+        <select id="c-kat">
+          <option>Versicherung</option><option>Telefon und Internet</option><option>Strom und Gas</option>
+          <option>Abo</option><option>Wohnen</option><option>Mobilität</option><option>Finanzen</option><option>Sonstiges</option>
+        </select>
+      </label>
+      <label>Kosten in Euro<input type="number" id="c-kosten" min="0" step="0.01" inputmode="decimal"></label>
+      <label>Zahlweise
+        <select id="c-intervall"><option value="monatlich">monatlich</option><option value="vierteljaehrlich">vierteljährlich</option><option value="jaehrlich">jährlich</option></select>
+      </label>
+      <label>Vertragsbeginn<input type="date" id="c-beginn"></label>
+      <label>Laufzeitende<input type="date" id="c-ende"></label>
+      <label class="full">Kündigungsfrist zum Laufzeitende
+        <span class="pair">
+          <input type="number" id="c-frist" min="0" step="1" inputmode="numeric" aria-label="Frist, Anzahl">
+          <select id="c-einheit" aria-label="Frist, Einheit"><option>Tage</option><option>Wochen</option><option>Monate</option></select>
+        </span>
+      </label>
+      <label class="check full"><input type="checkbox" id="c-auto"> Verlängert sich automatisch</label>
+      <label>Verlängerung in Monaten<input type="number" id="c-verl" min="1" step="1" inputmode="numeric"></label>
+      <label>Status
+        <select id="c-status"><option value="aktiv">Aktiv</option><option value="gekuendigt">Gekündigt</option><option value="beendet">Beendet</option></select>
+      </label>
+      <label>Vertragsnummer<input type="text" id="c-nummer" placeholder="z. B. 123-456-789"></label>
+      <label>Erinnerung (Tage vor Frist)<input type="number" id="c-erinnerung" min="0" step="1" inputmode="numeric" placeholder="30"></label>
+      <div class="full">
+        <div class="lbl-s">Dokumente</div>
+        <div class="docs" id="c-docs"></div>
+        <input type="file" id="c-file" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt" multiple hidden>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+          <button class="btn small" type="button" id="c-addfile">Datei hinzufügen</button>
+          <span class="meta" id="c-docnote"></span>
+        </div>
+      </div>
+      <label class="full">Notizen<textarea id="c-notiz" placeholder="Kundennummer, Ansprechpartner, Hotline"></textarea></label>
+    </div>
+    <div class="foot">
+      <button class="btn danger" type="button" id="c-del">Löschen</button>
+      <span class="err sp" id="c-err" role="alert"></span>
+      <button class="btn primary" type="submit">Speichern</button>
+    </div>
+  </form>
+
+  <form id="form-p" hidden>
+    <div class="fields">
+      <label class="full">Name des Posts<input type="text" id="p-titel" required placeholder="Worum geht es im Post?"></label>
+      <div class="full meta" id="p-slug"></div>
+      <label>Plattform<select id="p-plattform"></select></label>
+      <label>Status
+        <select id="p-status"><option value="idee">Idee</option><option value="entwurf">Entwurf</option><option value="geplant">Geplant</option><option value="veroeffentlicht">Veröffentlicht</option></select>
+      </label>
+      <label>Datum<input type="date" id="p-datum"></label>
+      <label>Uhrzeit<input type="time" id="p-zeit"></label>
+      <label class="full">Text<textarea id="p-text" placeholder="Der Text des Posts"></textarea><span class="counter" id="p-count"></span></label>
+      <div class="full">
+        <div class="lbl-s">Bilder</div>
+        <div class="docs" id="p-docs"></div>
+        <input type="file" id="p-file" accept=".png,.jpg,.jpeg,.webp,.gif" multiple hidden>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+          <button class="btn small" type="button" id="p-addfile">Bild hinzufügen</button>
+          <span class="meta" id="p-docnote"></span>
+        </div>
+      </div>
+      <label class="full">Link<input type="url" id="p-link" placeholder="https://"></label>
+    </div>
+    <div class="foot">
+      <button class="btn danger" type="button" id="p-del">Löschen</button>
+      <span class="err sp" id="p-err" role="alert"></span>
+      <button class="btn primary" type="submit">Speichern</button>
+    </div>
+  </form>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+
+  /* ---------- Hilfen ---------- */
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    var p = props || {};
+    Object.keys(p).forEach(function (k) {
+      var v = p[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.indexOf('on') === 0) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      var kids = [].concat(arguments[i]);
+      kids.forEach(function (kid) {
+        if (kid === null || kid === undefined || kid === false) return;
+        el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+      });
+    }
+    return el;
+  }
+  var now = new Date();
+  var TODAY = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function parse(s) { if (!s) return null; var a = s.split('-').map(Number); return new Date(a[0], a[1] - 1, a[2]); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+  function addMonths(d, n) {
+    var t = new Date(d.getFullYear(), d.getMonth() + n, 1);
+    var last = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+    t.setDate(Math.min(d.getDate(), last));
+    return t;
+  }
+  function diff(a, b) { return Math.round((a - b) / 864e5); }
+  function fmtDate(d) { return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
+  var eur = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  function inDays(n) {
+    if (n === 0) return 'heute';
+    if (n === 1) return 'morgen';
+    if (n === -1) return 'gestern';
+    return n > 0 ? 'in ' + n + ' Tagen' : 'vor ' + (-n) + ' Tagen';
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+  function setNote(msg) { var n = $('#note'); n.textContent = msg || ''; n.hidden = !msg; }
+
+  $('#today').textContent = TODAY.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  /* ---------- Daten ---------- */
+  var STATUS_C = { aktiv: 'Aktiv', gekuendigt: 'Gekündigt', beendet: 'Beendet' };
+  var STATUS_P = { idee: 'Idee', entwurf: 'Entwurf', geplant: 'Geplant', veroeffentlicht: 'Veröffentlicht' };
+  var PLATFORMS = ['Instagram', 'LinkedIn', 'X', 'Facebook', 'TikTok', 'YouTube', 'Blog', 'Newsletter', 'Sonstige'];
+  var LIMITS = { X: 280, LinkedIn: 3000, Instagram: 2200, Facebook: 63206, TikTok: 2200 };
+  var FACTOR = { monatlich: 1, vierteljaehrlich: 1 / 3, jaehrlich: 1 / 12 };
+  var INTERVAL_LBL = { monatlich: 'Monat', vierteljaehrlich: 'Quartal', jaehrlich: 'Jahr' };
+
+  var assetsApi = null;
+  /* Dateien (PDFs, Bilder) liegen in IndexedDB auf diesem Gerät. */
+  var idbP = null;
+  function idb() {
+    if (!idbP) idbP = new Promise(function (res, rej) {
+      var rq = indexedDB.open('handyvertraege', 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore('files'); };
+      rq.onsuccess = function () { res(rq.result); };
+      rq.onerror = function () { rej(rq.error); };
+    });
+    return idbP;
+  }
+  function idbDo(mode, fn) {
+    return idb().then(function (db) {
+      return new Promise(function (res, rej) {
+        var tx = db.transaction('files', mode), st = tx.objectStore('files'), out;
+        var r = fn(st); if (r) r.onsuccess = function () { out = r.result; };
+        tx.oncomplete = function () { res(out); };
+        tx.onerror = function () { rej(tx.error); }; tx.onabort = function () { rej(tx.error); };
+      });
+    });
+  }
+  function newId() { var a = new Uint8Array(16); crypto.getRandomValues(a); return Array.from(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+  var localAssets = {
+    upload: async function (f, opt) {
+      if (f.size > 20 * 1048576) { var e = new Error('too_large'); e.code = 'too_large'; throw e; }
+      var id = newId(), blob = new Blob([await f.arrayBuffer()], { type: (opt && opt.type) || f.type });
+      await idbDo('readwrite', function (st) { st.put(blob, id); });
+      return { id: id, sizeBytes: f.size };
+    },
+    delete: function (id) { return idbDo('readwrite', function (st) { st.delete(id); }); },
+    get: function (id) { return idbDo('readonly', function (st) { return st.get(id); }); },
+    put: function (id, blob) { return idbDo('readwrite', function (st) { st.put(blob, id); }); },
+    keys: function () { return idbDo('readonly', function (st) { return st.getAllKeys(); }); }
+  };
+  async function openDoc(ev, id) {
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) return;
+    ev.preventDefault();
+    var w = window.open('', '_blank');
+    try { var b = await localAssets.get(id); if (!b) throw 0; var u = URL.createObjectURL(b); if (w) w.location = u; else location.href = u; }
+    catch (e) { if (w) w.close(); toast('Datei nicht gefunden.'); }
+  }
+  function blobImg(cls, id, alt) {
+    var img = h('img', { class: cls, src: '_blob/' + id, alt: alt || '', loading: 'lazy' });
+    img.addEventListener('error', function once() {
+      img.removeEventListener('error', once);
+      localAssets.get(id).then(function (b) { if (b) img.src = URL.createObjectURL(b); }).catch(function () {});
+    });
+    return img;
+  }
+  function saveFile(name, data, type) {
+    var u = URL.createObjectURL(new Blob([data], { type: type }));
+    var a = document.createElement('a'); a.href = u; a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+  }
+  var state = { contracts: [], posts: [], loaded: { contracts: false, posts: false }, mode: 'local', tab: 'vertraege' };
+
+  function readLocal(kind) {
+    try { var raw = localStorage.getItem('vp-' + kind); return raw ? JSON.parse(raw) : []; } catch (e) { return []; }
+  }
+  function writeLocal(kind) {
+    try { localStorage.setItem('vp-' + kind, JSON.stringify(state[kind])); } catch (e) { /* ignorieren */ }
+  }
+
+  var store = {
+    colls: null,
+    start: async function () {
+      var db = null, uid = null;
+      try {
+        if (false) {
+          var res = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+          db = res[0];
+          uid = res[1] ? await res[1].id() : null;
+          try { assetsApi = await window.claude.use('assets'); } catch (e2) { assetsApi = null; }
+        }
+      } catch (e) { db = null; }
+      if (db && uid) {
+        state.mode = 'cloud';
+        var base = db.doc('data/users/' + uid + '/profile');
+        this.colls = { contracts: base.collection('contracts'), posts: base.collection('posts') };
+        ['contracts', 'posts'].forEach(function (kind) {
+          store.refresh(kind);
+          store.colls[kind].onSnapshot(function (snap) {
+            state[kind] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+            state.loaded[kind] = true; renderAll();
+          }, function (err) {
+            state.loaded[kind] = true;
+            setNote('Der Speicher ist gerade nicht erreichbar (' + ((err && err.code) || 'Fehler') + '). Lade die Seite neu.');
+            renderAll();
+          });
+        });
+      } else {
+        state.mode = 'local';
+        state.contracts = readLocal('contracts'); state.posts = readLocal('posts');
+        state.loaded.contracts = true; state.loaded.posts = true;
+        assetsApi = localAssets; setNote('');
+        renderAll();
+      }
+    },
+    refresh: async function (kind) {
+      if (state.mode !== 'cloud') return;
+      try {
+        var snap = await this.colls[kind].get();
+        state[kind] = snap.docs.map(function (d) { return Object.assign({}, d.data(), { id: d.id }); });
+        state.loaded[kind] = true; renderAll();
+      } catch (e) { /* die Live-Aktualisierung übernimmt */ }
+    },
+    save: async function (kind, item) {
+      var data = {};
+      Object.keys(item).forEach(function (k) { if (k !== 'id' && item[k] !== undefined) data[k] = item[k]; });
+      if (state.mode === 'cloud') {
+        var ref = item.id ? this.colls[kind].doc(item.id) : this.colls[kind].doc();
+        await ref.set(data);
+        var rec = Object.assign({}, data, { id: ref.id });
+        var idx = state[kind].findIndex(function (x) { return x.id === ref.id; });
+        if (idx >= 0) state[kind][idx] = rec; else state[kind].push(rec);
+        renderAll();
+        this.refresh(kind);
+      } else {
+        var id = item.id || ('l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+        var rec = Object.assign({}, data, { id: id });
+        var i = state[kind].findIndex(function (x) { return x.id === id; });
+        if (i >= 0) state[kind][i] = rec; else state[kind].push(rec);
+        writeLocal(kind); renderAll();
+      }
+    },
+    remove: async function (kind, id) {
+      if (state.mode === 'cloud') {
+        await this.colls[kind].doc(id).delete();
+        state[kind] = state[kind].filter(function (x) { return x.id !== id; });
+        renderAll();
+        this.refresh(kind);
+      } else { state[kind] = state[kind].filter(function (x) { return x.id !== id; }); writeLocal(kind); renderAll(); }
+    }
+  };
+
+  /* ---------- Vertragslogik ---------- */
+  function nextEnd(c) {
+    var e = parse(c.ende);
+    if (!e) return null;
+    var verl = Number(c.verl) || 0;
+    if (c.auto && verl > 0) { var guard = 0; while (e < TODAY && guard++ < 300) e = addMonths(e, verl); }
+    return e;
+  }
+  function cancelBy(c) {
+    var e = nextEnd(c);
+    if (!e) return null;
+    var n = Number(c.fristWert) || 0;
+    if (c.fristEinheit === 'Monate') return addMonths(e, -n);
+    if (c.fristEinheit === 'Wochen') return addDays(e, -7 * n);
+    return addDays(e, -n);
+  }
+  function fristText(c) {
+    var n = Number(c.fristWert) || 0;
+    return n ? n + ' ' + (c.fristEinheit || 'Tage') : 'keine Frist';
+  }
+  function deadline(c) {
+    if (c.status === 'beendet') return { text: 'Beendet', cls: 'mute', sub: '', group: 3, t: 0 };
+    var end = nextEnd(c);
+    if (c.status === 'gekuendigt') {
+      return { text: 'Gekündigt', cls: 'mute', sub: end ? 'endet am ' + fmtDate(end) : '', group: 2, t: end ? end.getTime() : 0 };
+    }
+    if (!end) return { text: 'Unbefristet', cls: 'mute', sub: 'Frist: ' + fristText(c), group: 1, t: 0 };
+    if (!c.auto) {
+      var de = diff(end, TODAY);
+      if (de < 0) return { text: 'Abgelaufen', cls: 'mute', sub: 'seit ' + fmtDate(end), group: 3, t: end.getTime() };
+      return { text: 'Endet ' + inDays(de), cls: de <= 30 ? 'warn' : 'mute', sub: 'Laufzeitende ' + fmtDate(end), group: 0, t: end.getTime(), days: de };
+    }
+    var cb = cancelBy(c), d = diff(cb, TODAY);
+    if (d < 0) return { text: 'Frist vorbei', cls: 'warn', sub: 'verlängert sich zum ' + fmtDate(end), group: 1, t: end.getTime() };
+    return { text: 'Kündigen ' + inDays(d), cls: d <= 14 ? 'bad' : (d <= 45 ? 'warn' : 'ok'), sub: 'bis ' + fmtDate(cb), group: 0, t: cb.getTime(), days: d };
+  }
+  function monthly(c) { return (Number(c.kosten) || 0) * (FACTOR[c.intervall] || 1); }
+
+  /* ---------- Darstellung: Verträge ---------- */
+  function stat(lbl, val, sub) { return h('div', { class: 'stat' }, h('div', { class: 'lbl', text: lbl }), h('div', { class: 'val', text: val }), h('div', { class: 'sub', text: sub || ' ' })); }
+
+  function renderSummary() {
+    var box = $('#c-summary'); box.replaceChildren();
+    var paying = state.contracts.filter(function (c) { return c.status !== 'beendet'; });
+    var sum = paying.reduce(function (a, c) { return a + monthly(c); }, 0);
+    var active = state.contracts.filter(function (c) { return c.status === 'aktiv'; });
+    var next = null;
+    active.forEach(function (c) {
+      if (!c.auto) return;
+      var cb = cancelBy(c);
+      if (cb && cb >= TODAY && (!next || cb < next.cb)) next = { c: c, cb: cb };
+    });
+    box.append(
+      stat('Pro Monat', eur.format(sum), paying.length + ' laufende Verträge'),
+      stat('Pro Jahr', eur.format(sum * 12), 'hochgerechnet'),
+      next ? stat('Nächste Frist', fmtDate(next.cb), next.c.name + ', ' + inDays(diff(next.cb, TODAY))) : stat('Nächste Frist', 'Keine', 'kein Vertrag mit offener Frist'),
+      stat('Aktiv', String(active.length), state.contracts.length - active.length + ' gekündigt oder beendet')
+    );
+  }
+
+  function delBtn(kind, item) {
+    var b = h('button', { class: 'btn small danger', type: 'button' }, 'Löschen');
+    var t;
+    b.addEventListener('click', async function () {
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed'); b.textContent = 'Wirklich löschen?';
+        t = setTimeout(function () { b.classList.remove('armed'); b.textContent = 'Löschen'; }, 4000);
+        return;
+      }
+      clearTimeout(t);
+      try {
+        await store.remove(kind, item.id);
+        deleteAssets(((kind === 'posts' ? item.bilder : item.docs) || []).map(function (d) { return d.id; }));
+        toast(kind === 'posts' ? 'Post gelöscht' : 'Vertrag gelöscht');
+      } catch (e) { toast('Löschen fehlgeschlagen.'); }
+    });
+    return b;
+  }
+
+  function contractRow(c) {
+    var dl = deadline(c);
+    var isEx = !!c.beispiel;
+    return h('div', { class: 'row', role: 'listitem' },
+      h('div', { class: 'name' },
+        h('button', { class: 'linkish', type: 'button', onclick: function (ev) { openContract(c, ev.currentTarget); } }, c.name || 'Ohne Namen'),
+        isEx ? h('span', { class: 'tag', text: 'Beispiel' }) : null,
+        h('div', { class: 'meta', text: [c.anbieter, c.kat, c.nummer ? 'Nr. ' + c.nummer : '', (c.docs && c.docs.length) ? c.docs.length + (c.docs.length === 1 ? ' Dokument' : ' Dokumente') : ''].filter(Boolean).join(' · ') })
+      ),
+      h('div', { class: 'num' },
+        h('div', { class: 'cell-l', text: 'Kosten' }),
+        h('div', { class: 'money', text: eur.format(Number(c.kosten) || 0) }),
+        h('div', { class: 'meta', text: 'pro ' + (INTERVAL_LBL[c.intervall] || 'Monat') })
+      ),
+      h('div', { class: 'num' },
+        h('div', { class: 'cell-l', text: 'Laufzeit' }),
+        h('div', { text: c.ende ? 'bis ' + fmtDate(parse(c.ende)) : 'unbefristet' }),
+        h('div', { class: 'meta', text: 'Frist ' + fristText(c) + (c.auto ? ', verlängert sich' : '') })
+      ),
+      h('div', null,
+        h('div', { class: 'cell-l', text: 'Kündigung' }),
+        h('span', { class: 'pill ' + dl.cls, text: dl.text }),
+        h('div', { class: 'meta num', text: dl.sub })
+      ),
+      h('div', { class: 'actions' },
+        h('span', { class: 'pill ' + (c.status === 'aktiv' ? 'acc' : 'mute'), text: STATUS_C[c.status] || 'Aktiv' }),
+        h('div', { class: 'btnrow' },
+          h('button', { class: 'btn small', type: 'button', onclick: function (e) { openContract(c, e.currentTarget); } }, 'Bearbeiten'),
+          delBtn('contracts', c))
+      )
+    );
+  }
+
+  function renderContracts() {
+    renderSummary();
+    var list = $('#c-list'); list.replaceChildren();
+    list.setAttribute('role', 'list');
+    if (!state.loaded.contracts) { list.append(h('div', { class: 'empty', text: 'Verträge werden geladen …' })); return; }
+    $('#c-clear').hidden = !state.contracts.some(function (c) { return c.beispiel; });
+    if (!state.contracts.length) {
+      list.append(h('div', { class: 'empty' },
+        h('h3', { text: 'Noch keine Verträge' }),
+        h('p', { text: 'Lege Handy, Versicherung, Strom oder Abos an. Die Seite rechnet aus, bis wann du kündigen musst, und sortiert nach der nächsten Frist.' }),
+        h('div', { class: 'btns' },
+          h('button', { class: 'btn primary', type: 'button', onclick: function (e) { openContract(null, e.currentTarget); } }, 'Ersten Vertrag anlegen'),
+          h('button', { class: 'btn', type: 'button', onclick: seedContracts }, 'Beispieldaten laden'))
+      ));
+      return;
+    }
+    var q = $('#c-search').value.trim().toLowerCase();
+    var st = $('#c-filter').value;
+    var rows = state.contracts.filter(function (c) {
+      if (st && c.status !== st) return false;
+      if (!q) return true;
+      return [c.name, c.anbieter, c.kat, c.notiz].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).map(function (c) { return { c: c, d: deadline(c) }; })
+      .sort(function (a, b) { return a.d.group - b.d.group || a.d.t - b.d.t || String(a.c.name).localeCompare(String(b.c.name), 'de'); });
+    if (!rows.length) { list.append(h('div', { class: 'empty' }, h('p', { text: 'Keine Verträge zu dieser Suche.' }))); return; }
+    list.append(h('div', { class: 'row head', 'aria-hidden': 'true' },
+      h('div', { text: 'Vertrag' }), h('div', { text: 'Kosten' }), h('div', { text: 'Laufzeit' }), h('div', { text: 'Kündigung' }), h('div', { text: 'Status und Aktion' })));
+    rows.forEach(function (r) { list.append(contractRow(r.c)); });
+  }
+
+  /* ---------- Darstellung: Posts ---------- */
+  function postWhen(p) {
+    var d = parse(p.datum);
+    if (!d) return h('span', { class: 'meta', text: 'ohne Termin' });
+    var n = diff(d, TODAY);
+    var late = p.status === 'geplant' && n < 0;
+    return h('span', { class: 'num' },
+      fmtDate(d) + (p.zeit ? ', ' + p.zeit + ' Uhr' : '') + ' ',
+      h('span', { class: 'pill ' + (late ? 'bad' : (p.status === 'veroeffentlicht' ? 'mute' : 'acc')), text: late ? 'überfällig' : inDays(n) })
+    );
+  }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || '') ? u : null; }
+  var NEXT = { idee: ['entwurf', 'Zum Entwurf'], entwurf: ['geplant', 'Einplanen'], geplant: ['veroeffentlicht', 'Veröffentlicht'] };
+
+  function postCard(p) {
+    var nx = NEXT[p.status];
+    var url = safeUrl(p.link);
+    var imgs = p.bilder || [];
+    return h('div', { class: 'card' },
+      imgs.length ? blobImg('cover', imgs[0].id, p.titel) : null,
+      imgs.length > 1 ? h('div', { class: 'meta', text: imgs.length + ' Bilder' }) : null,
+      h('div', null, h('span', { class: 'pill mute', text: p.plattform || 'Sonstige' }), p.beispiel ? h('span', { class: 'tag', text: 'Beispiel' }) : null),
+      h('div', { class: 'ttl', text: p.titel || 'Ohne Titel' }),
+      p.text ? h('div', { class: 'snip', text: p.text }) : null,
+      h('div', { class: 'when' }, postWhen(p)),
+      url ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', text: 'Link öffnen' }) : null,
+      h('div', { class: 'acts' },
+        h('button', { class: 'btn small', type: 'button', onclick: function (e) { openPost(p, e.currentTarget); } }, 'Bearbeiten'),
+        delBtn('posts', p),
+        nx ? h('button', { class: 'btn small', type: 'button', onclick: function () { advance(p, nx[0]); } }, nx[1]) : null
+      )
+    );
+  }
+  async function advance(p, status) {
+    try { await store.save('posts', Object.assign({}, p, { status: status })); toast('Status: ' + STATUS_P[status]); }
+    catch (e) { toast('Änderung konnte nicht gespeichert werden.'); }
+  }
+
+  function renderPosts() {
+    var box = $('#p-board'); box.replaceChildren();
+    if (!state.loaded.posts) { box.append(h('div', { class: 'empty', text: 'Posts werden geladen …' })); return; }
+    $('#p-clear').hidden = !state.posts.some(function (p) { return p.beispiel; });
+    if (!state.posts.length) {
+      box.append(h('div', { class: 'list' }, h('div', { class: 'empty' },
+        h('h3', { text: 'Noch keine Posts' }),
+        h('p', { text: 'Sammle Ideen, schreibe Entwürfe und plane Termine je Plattform. Jeder Post wandert von Idee über Entwurf und Geplant bis Veröffentlicht.' }),
+        h('div', { class: 'btns' },
+          h('button', { class: 'btn primary', type: 'button', onclick: function (e) { openPost(null, e.currentTarget); } }, 'Ersten Post anlegen'),
+          h('button', { class: 'btn', type: 'button', onclick: seedPosts }, 'Beispieldaten laden'))
+      )));
+      return;
+    }
+    var q = $('#p-search').value.trim().toLowerCase();
+    var pf = $('#p-filter').value;
+    var vis = state.posts.filter(function (p) {
+      if (pf && p.plattform !== pf) return false;
+      return !q || [p.titel, p.text, p.plattform].join(' ').toLowerCase().indexOf(q) >= 0;
+    });
+    var board = h('div', { class: 'board' });
+    Object.keys(STATUS_P).forEach(function (s) {
+      var items = vis.filter(function (p) { return p.status === s; }).sort(function (a, b) {
+        if (!a.datum && !b.datum) return String(a.titel).localeCompare(String(b.titel), 'de');
+        if (!a.datum) return 1; if (!b.datum) return -1;
+        return (a.datum + (a.zeit || '')).localeCompare(b.datum + (b.zeit || ''));
+      });
+      var col = h('div', { class: 'col' },
+        h('h3', null, STATUS_P[s], h('span', { class: 'n', text: String(items.length) })));
+      if (!items.length) col.append(h('div', { class: 'none', text: 'Nichts in dieser Spalte' }));
+      items.forEach(function (p) { col.append(postCard(p)); });
+      board.append(col);
+    });
+    box.append(board);
+  }
+
+  function renderAll() {
+    renderContracts(); renderPosts(); renderDue(); updateNames(); deepLink();
+    $('#cnt-c').textContent = state.contracts.length;
+    $('#cnt-p').textContent = state.posts.length;
+  }
+
+  /* ---------- Bearbeiten-Fenster ---------- */
+  var opener = null, editing = { kind: null, item: null }, armedTimer;
+  function showSheet(kind, title, trigger) {
+    opener = trigger || null; editing.kind = kind;
+    $('#sheet-title').textContent = title;
+    $('#form-c').hidden = kind !== 'contracts';
+    $('#form-p').hidden = kind !== 'posts';
+    $('#scrim').hidden = false; $('#sheet').hidden = false;
+    var first = kind === 'contracts' ? $('#c-name') : $('#p-titel');
+    setTimeout(function () { first.focus(); }, 30);
+  }
+  function closeSheet() {
+    $('#scrim').hidden = true; $('#sheet').hidden = true;
+    cdocs.discard(); pdocs.discard();
+    resetDelete();
+    if (opener && document.contains(opener)) opener.focus();
+  }
+  function resetDelete() {
+    clearTimeout(armedTimer);
+    ['#c-del', '#p-del'].forEach(function (s) { var b = $(s); b.classList.remove('armed'); b.textContent = 'Löschen'; });
+    $('#c-err').textContent = ''; $('#p-err').textContent = '';
+  }
+
+  function openContract(c, trigger) {
+    editing.item = c;
+    var d = c || { kat: 'Versicherung', intervall: 'monatlich', fristEinheit: 'Monate', fristWert: 3, verl: 12, auto: true, status: 'aktiv', beginn: iso(TODAY) };
+    $('#c-name').value = d.name || ''; $('#c-anbieter').value = d.anbieter || '';
+    $('#c-kat').value = d.kat || 'Sonstiges'; $('#c-kosten').value = d.kosten === undefined ? '' : d.kosten;
+    $('#c-intervall').value = d.intervall || 'monatlich'; $('#c-beginn').value = d.beginn || ''; $('#c-ende').value = d.ende || '';
+    $('#c-frist').value = d.fristWert === undefined ? '' : d.fristWert; $('#c-einheit').value = d.fristEinheit || 'Tage';
+    $('#c-auto').checked = !!d.auto; $('#c-verl').value = d.verl || 12; $('#c-verl').disabled = !d.auto;
+    $('#c-status').value = d.status || 'aktiv'; $('#c-notiz').value = d.notiz || '';
+    $('#c-nummer').value = d.nummer || ''; $('#c-erinnerung').value = d.erinnerung === undefined ? '' : d.erinnerung;
+    cdocs.set(d.docs);
+    $('#c-del').hidden = !c;
+    showSheet('contracts', c ? 'Vertrag bearbeiten' : 'Neuer Vertrag', trigger);
+  }
+  function openPost(p, trigger) {
+    editing.item = p;
+    var d = p || { plattform: 'Instagram', status: 'idee' };
+    $('#p-titel').value = d.titel || ''; $('#p-plattform').value = d.plattform || 'Sonstige'; $('#p-status').value = d.status || 'idee';
+    $('#p-datum').value = d.datum || ''; $('#p-zeit').value = d.zeit || ''; $('#p-text').value = d.text || ''; $('#p-link').value = d.link || '';
+    pdocs.set(d.bilder); updateSlug();
+    $('#p-del').hidden = !p;
+    updateCount();
+    showSheet('posts', p ? 'Post bearbeiten' : 'Neuer Post', trigger);
+  }
+  function updateCount() {
+    var lim = LIMITS[$('#p-plattform').value];
+    var n = $('#p-text').value.length;
+    var el = $('#p-count');
+    el.textContent = lim ? n + ' / ' + lim + ' Zeichen' : n + ' Zeichen';
+    el.classList.toggle('over', !!lim && n > lim);
+  }
+
+  $('#form-c').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    var name = $('#c-name').value.trim();
+    var kosten = parseFloat($('#c-kosten').value);
+    if (!name) { $('#c-err').textContent = 'Bitte gib einen Namen ein.'; return; }
+    if ($('#c-kosten').value !== '' && (isNaN(kosten) || kosten < 0)) { $('#c-err').textContent = 'Die Kosten müssen eine Zahl ab 0 sein.'; return; }
+    var beginn = $('#c-beginn').value, ende = $('#c-ende').value;
+    if (beginn && ende && ende < beginn) { $('#c-err').textContent = 'Das Laufzeitende liegt vor dem Vertragsbeginn.'; return; }
+    var item = {
+      id: editing.item ? editing.item.id : undefined,
+      name: name, anbieter: $('#c-anbieter').value.trim(), kat: $('#c-kat').value,
+      kosten: isNaN(kosten) ? 0 : kosten, intervall: $('#c-intervall').value,
+      beginn: beginn, ende: ende,
+      fristWert: Number($('#c-frist').value) || 0, fristEinheit: $('#c-einheit').value,
+      auto: $('#c-auto').checked, verl: Number($('#c-verl').value) || 12,
+      status: $('#c-status').value, notiz: $('#c-notiz').value.trim(),
+      nummer: $('#c-nummer').value.trim(),
+      erinnerung: $('#c-erinnerung').value === '' ? 30 : Math.max(0, Number($('#c-erinnerung').value) || 0),
+      docs: cdocs.get(),
+      beispiel: editing.item && editing.item.beispiel ? true : false
+    };
+    try { await store.save('contracts', item); cdocs.commit(); closeSheet(); toast('Vertrag gespeichert'); }
+    catch (e) { $('#c-err').textContent = 'Speichern fehlgeschlagen. Versuche es noch einmal.'; }
+  });
+  $('#form-p').addEventListener('submit', async function (ev) {
+    ev.preventDefault();
+    var titel = $('#p-titel').value.trim();
+    if (!titel) { $('#p-err').textContent = 'Bitte gib einen Titel ein.'; return; }
+    var link = $('#p-link').value.trim();
+    if (link && !safeUrl(link)) { $('#p-err').textContent = 'Der Link muss mit http:// oder https:// beginnen.'; return; }
+    var item = {
+      id: editing.item ? editing.item.id : undefined,
+      titel: titel, plattform: $('#p-plattform').value, status: $('#p-status').value,
+      datum: $('#p-datum').value, zeit: $('#p-zeit').value, text: $('#p-text').value, link: link, bilder: pdocs.get(),
+      beispiel: editing.item && editing.item.beispiel ? true : false
+    };
+    try { await store.save('posts', item); pdocs.commit(); closeSheet(); toast('Post gespeichert'); }
+    catch (e) { $('#p-err').textContent = 'Speichern fehlgeschlagen. Versuche es noch einmal.'; }
+  });
+
+  function wireDelete(btnSel, kind, label) {
+    $(btnSel).addEventListener('click', async function () {
+      var b = $(btnSel);
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed'); b.textContent = 'Endgültig löschen';
+        armedTimer = setTimeout(resetDelete, 4000);
+        return;
+      }
+      try {
+        await store.remove(kind, editing.item.id);
+        if (kind !== 'x') deleteAssets(((kind === 'posts' ? editing.item.bilder : editing.item.docs) || []).map(function (d) { return d.id; }));
+        closeSheet(); toast(label + ' gelöscht'); }
+      catch (e) { toast('Löschen fehlgeschlagen.'); }
+    });
+  }
+  wireDelete('#c-del', 'contracts', 'Vertrag');
+  wireDelete('#p-del', 'posts', 'Post');
+
+  $('#sheet-close').addEventListener('click', closeSheet);
+  $('#scrim').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
+  $('#c-auto').addEventListener('change', function () { $('#c-verl').disabled = !$('#c-auto').checked; });
+  $('#p-text').addEventListener('input', updateCount);
+  $('#p-plattform').addEventListener('change', updateCount);
+
+  /* ---------- Dokumente ---------- */
+  function deleteAssets(ids) {
+    if (!assetsApi || !ids || !ids.length) return;
+    ids.forEach(function (id) { assetsApi.delete(id).catch(function () { /* ignorieren */ }); });
+  }
+  function fmtSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+  var DOC_TYPES = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', txt: 'text/plain' };
+  var UPLOAD_ERR = { too_large: 'Die Datei ist größer als 20 MB.', quota_or_state: 'Der Speicherplatz ist voll.', rate_limited: 'Zu viele Uploads. Warte kurz.' };
+  async function uploadFile(f) {
+    var type = DOC_TYPES[(f.name.split('.').pop() || '').toLowerCase()];
+    if (!type) return { error: 'Dateityp nicht unterstützt.' };
+    try { var res = await assetsApi.upload(f, { type: type }); return { id: res.id, size: res.sizeBytes }; }
+    catch (e) { return { error: UPLOAD_ERR[e && e.code] || 'Upload fehlgeschlagen.' }; }
+  }
+  function DocBox(p, imagesOnly) {
+    var m = { docs: [], newIds: [], removed: [] };
+    var box = $('#' + p + '-docs'), note = $('#' + p + '-docnote'), addBtn = $('#' + p + '-addfile'), file = $('#' + p + '-file');
+    function draw(msg) {
+      box.replaceChildren();
+      m.docs.forEach(function (d) {
+        box.append(h('div', { class: 'doc' },
+          isImage(d) ? blobImg('thumb', d.id, '') : null,
+          h('a', { href: '_blob/' + d.id, target: '_blank', rel: 'noopener noreferrer', text: d.name, onclick: function (ev) { openDoc(ev, d.id); } }),
+          h('span', { class: 'meta num', text: fmtSize(d.size || 0) }),
+          h('button', { class: 'btn small ghost', type: 'button', onclick: function () { remove(d.id); } }, 'Entfernen')));
+      });
+      addBtn.disabled = !assetsApi;
+      note.textContent = msg || (assetsApi ? (imagesOnly ? 'PNG, JPG, WebP oder GIF, bis 20 MB, mehrere möglich' : 'PDF, Bilder oder Text, bis 20 MB, mehrere Dateien möglich') : 'Der Upload ist in dieser Ansicht nicht verfügbar.');
+    }
+    function remove(id) {
+      m.docs = m.docs.filter(function (d) { return d.id !== id; });
+      if (m.newIds.indexOf(id) >= 0) { m.newIds = m.newIds.filter(function (x) { return x !== id; }); deleteAssets([id]); }
+      else m.removed.push(id);
+      draw();
+    }
+    m.set = function (docs) { m.docs = (docs || []).slice(); m.newIds = []; m.removed = []; draw(); };
+    m.get = function () { return m.docs.slice(); };
+    m.commit = function () { m.newIds = []; deleteAssets(m.removed); m.removed = []; };
+    m.discard = function () { deleteAssets(m.newIds); m.newIds = []; m.removed = []; };
+    addBtn.addEventListener('click', function () { file.click(); });
+    file.addEventListener('change', async function (ev) {
+      var files = [].slice.call(ev.target.files); ev.target.value = '';
+      if (!assetsApi || !files.length) return;
+      var msgs = [];
+      for (var i = 0; i < files.length; i++) {
+        note.textContent = 'Lädt hoch: ' + (i + 1) + ' von ' + files.length + ' …';
+        var ty = DOC_TYPES[(files[i].name.split('.').pop() || '').toLowerCase()];
+        if (imagesOnly && !(ty && ty.indexOf('image/') === 0)) { msgs.push(files[i].name + ': nur Bilder erlaubt.'); continue; }
+        var r = await uploadFile(files[i]);
+        if (r.error) { msgs.push(files[i].name + ': ' + r.error); continue; }
+        m.docs.push({ id: r.id, name: files[i].name, size: r.size }); m.newIds.push(r.id);
+      }
+      draw(msgs.join(' '));
+    });
+    return m;
+  }
+  var cdocs = DocBox('c'), pdocs = DocBox('p', true);
+
+  /* ---------- Namen und Direktaufruf ---------- */
+  function isImage(d) { return /\.(png|jpe?g|webp|gif)$/i.test(d.name || ''); }
+  function slug(t) {
+    return String(t || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function updateSlug() {
+    var sl = slug($('#p-titel').value);
+    $('#p-slug').textContent = sl ? 'Direktaufruf: Seitenadresse mit #post-' + sl : '';
+  }
+  function updateNames() {
+    var dl = $('#p-names'); dl.replaceChildren();
+    state.posts.forEach(function (p) { if (p.titel) dl.append(h('option', { value: p.titel })); });
+  }
+  function openByName() {
+    var v = $('#p-search').value.trim().toLowerCase();
+    if (!v) return;
+    var exact = state.posts.filter(function (p) { return String(p.titel).toLowerCase() === v; });
+    var hits = exact.length ? exact : state.posts.filter(function (p) { return String(p.titel).toLowerCase().indexOf(v) >= 0; });
+    if (hits.length === 1) openPost(hits[0], $('#p-search'));
+    else if (!hits.length) toast('Kein Post mit diesem Namen.');
+    else toast(hits.length + ' Posts passen. Gib mehr vom Namen ein.');
+  }
+  var deepDone = false;
+  function deepLink() {
+    if (deepDone || !state.loaded.posts) return;
+    deepDone = true;
+    var hsh = (location.hash || '').replace('#', '');
+    if (hsh.indexOf('post-') !== 0) return;
+    var found = state.posts.filter(function (x) { return slug(x.titel) === hsh.slice(5); })[0];
+    if (found) { setTab('posts', false); openPost(found, null); }
+  }
+
+  /* ---------- Steht an ---------- */
+  function renderDue() {
+    var box = $('#due'); box.replaceChildren();
+    if (!state.loaded.contracts || !state.loaded.posts) { box.hidden = true; return; }
+    var items = [];
+    state.contracts.forEach(function (c) {
+      var dl = deadline(c);
+      var rem = c.erinnerung === undefined ? 30 : Number(c.erinnerung);
+      if (dl.group !== 0 || dl.days === undefined || rem <= 0 || dl.days > rem) return;
+      items.push({ days: dl.days, pill: dl.text, cls: dl.cls, title: c.name, sub: dl.sub, kind: 'Vertrag', open: function (el) { openContract(c, el); } });
+    });
+    state.posts.forEach(function (p) {
+      var d = parse(p.datum);
+      if (p.status !== 'geplant' || !d) return;
+      var n = diff(d, TODAY);
+      if (n > 1) return;
+      items.push({ days: n, pill: n < 0 ? 'Überfällig' : (n === 0 ? 'Heute' : 'Morgen'), cls: n < 0 ? 'bad' : 'acc', title: p.titel, sub: (p.plattform || '') + (p.zeit ? ', ' + p.zeit + ' Uhr' : ''), kind: 'Post', open: function (el) { openPost(p, el); } });
+    });
+    items.sort(function (a, b) { return a.days - b.days; });
+    box.hidden = !items.length;
+    if (!items.length) return;
+    var ul = h('ul');
+    items.forEach(function (it) {
+      ul.append(h('li', null,
+        h('span', { class: 'pill ' + it.cls, text: it.pill }),
+        h('span', { class: 'what' }, h('b', { text: it.title || 'Ohne Namen' }), h('span', { class: 'meta', text: ' · ' + it.kind + (it.sub ? ', ' + it.sub : '') })),
+        h('button', { class: 'btn small', type: 'button', onclick: function (e) { it.open(e.currentTarget); } }, 'Öffnen')));
+    });
+    box.append(h('h2', { text: 'Steht an (' + items.length + ')' }), ul,
+      h('div', { class: 'fine', text: 'Diese Liste wird beim Öffnen der Seite berechnet. Es werden keine E-Mails oder Mitteilungen verschickt.' }));
+  }
+
+  /* ---------- Beispiele, Export, Reiter ---------- */
+  var plSel = $('#p-plattform'), plFil = $('#p-filter');
+  plFil.append(h('option', { value: '', text: 'Alle Plattformen' }));
+  PLATFORMS.forEach(function (p) { plSel.append(h('option', { value: p, text: p })); plFil.append(h('option', { value: p, text: p })); });
+
+  async function seedContracts() {
+    var T = TODAY;
+    var demo = [
+      { name: 'Handyvertrag', anbieter: 'Musterfon', kat: 'Telefon und Internet', kosten: 24.99, intervall: 'monatlich', beginn: iso(addMonths(T, -20)), ende: iso(addDays(T, 100)), fristWert: 3, fristEinheit: 'Monate', auto: true, verl: 12, status: 'aktiv', notiz: 'Beispieleintrag' },
+      { name: 'Haftpflichtversicherung', anbieter: 'Beispiel Versicherung AG', kat: 'Versicherung', kosten: 74, intervall: 'jaehrlich', beginn: iso(addMonths(T, -30)), ende: iso(addDays(T, 210)), fristWert: 1, fristEinheit: 'Monate', auto: true, verl: 12, status: 'aktiv', notiz: 'Beispieleintrag' },
+      { name: 'Streaming-Abo', anbieter: 'Beispiel Stream', kat: 'Abo', kosten: 12.99, intervall: 'monatlich', beginn: iso(addMonths(T, -8)), ende: '', fristWert: 1, fristEinheit: 'Monate', auto: true, verl: 1, status: 'aktiv', notiz: 'Beispieleintrag' },
+      { name: 'Fitnessstudio', anbieter: 'Beispiel Fitness', kat: 'Sonstiges', kosten: 29.9, intervall: 'monatlich', beginn: iso(addMonths(T, -24)), ende: iso(addDays(T, 40)), fristWert: 4, fristEinheit: 'Wochen', auto: false, verl: 12, status: 'gekuendigt', notiz: 'Beispieleintrag' }
+    ];
+    try { for (var i = 0; i < demo.length; i++) { demo[i].beispiel = true; await store.save('contracts', demo[i]); } toast('Beispieldaten geladen'); }
+    catch (e) { toast('Beispieldaten konnten nicht gespeichert werden.'); }
+  }
+  async function seedPosts() {
+    var T = TODAY;
+    var demo = [
+      { titel: 'Blick hinter die Kulissen', plattform: 'Instagram', status: 'idee', datum: '', zeit: '', text: 'Kurzes Video vom Arbeitsplatz.' },
+      { titel: 'Drei Learnings aus dem Quartal', plattform: 'LinkedIn', status: 'entwurf', datum: iso(addDays(T, 6)), zeit: '09:00', text: 'Im letzten Quartal habe ich drei Dinge gelernt, die ich vorher unterschätzt habe.' },
+      { titel: 'Neuer Blogartikel', plattform: 'X', status: 'geplant', datum: iso(addDays(T, 1)), zeit: '12:30', text: 'Neuer Artikel ist online. Kurz und praktisch.', link: 'https://example.com/blog' },
+      { titel: 'Newsletter Oktober', plattform: 'Newsletter', status: 'geplant', datum: iso(addDays(T, -2)), zeit: '08:00', text: 'Monatsrückblick und drei Tipps.' },
+      { titel: 'Produktfoto Herbst', plattform: 'Instagram', status: 'veroeffentlicht', datum: iso(addDays(T, -5)), zeit: '18:00', text: 'Herbstlicht, neues Foto.' }
+    ];
+    try { for (var i = 0; i < demo.length; i++) { demo[i].beispiel = true; await store.save('posts', demo[i]); } toast('Beispieldaten geladen'); }
+    catch (e) { toast('Beispieldaten konnten nicht gespeichert werden.'); }
+  }
+  async function clearExamples(kind) {
+    var ex = state[kind].filter(function (x) { return x.beispiel; });
+    try { for (var i = 0; i < ex.length; i++) await store.remove(kind, ex[i].id); toast('Beispiele entfernt'); }
+    catch (e) { toast('Entfernen fehlgeschlagen.'); }
+  }
+  $('#c-clear').addEventListener('click', function () { clearExamples('contracts'); });
+  $('#p-clear').addEventListener('click', function () { clearExamples('posts'); });
+
+  function csvCell(v) { var s = String(v === undefined || v === null ? '' : v); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+  async function exportCsv(kind) {
+    var cols = kind === 'contracts'
+      ? [['name', 'Name'], ['anbieter', 'Anbieter'], ['nummer', 'Vertragsnummer'], ['kat', 'Kategorie'], ['kosten', 'Kosten'], ['intervall', 'Zahlweise'], ['beginn', 'Beginn'], ['ende', 'Ende'], ['fristWert', 'Frist'], ['fristEinheit', 'Einheit'], ['auto', 'Verlängert sich'], ['status', 'Status'], ['notiz', 'Notizen']]
+      : [['titel', 'Titel'], ['plattform', 'Plattform'], ['status', 'Status'], ['datum', 'Datum'], ['zeit', 'Uhrzeit'], ['text', 'Text'], ['link', 'Link']];
+    if (!state[kind].length) { toast('Es gibt noch nichts zu exportieren.'); return; }
+    var lines = [cols.map(function (c) { return csvCell(c[1]); }).join(';')];
+    state[kind].forEach(function (r) { lines.push(cols.map(function (c) { return csvCell(c[0] === 'auto' ? (r.auto ? 'ja' : 'nein') : r[c[0]]); }).join(';')); });
+    try {
+      saveFile(kind === 'contracts' ? 'vertraege.csv' : 'posts.csv', '﻿' + lines.join('\r\n'), 'text/csv');
+      toast('Export gespeichert');
+    } catch (e) { if (!e || e.code !== 'declined') toast('Export nicht möglich.'); }
+  }
+  $('#c-export').addEventListener('click', function () { exportCsv('contracts'); });
+  $('#p-export').addEventListener('click', function () { exportCsv('posts'); });
+
+  $('#c-new').addEventListener('click', function (e) { openContract(null, e.currentTarget); });
+  $('#p-new').addEventListener('click', function (e) { openPost(null, e.currentTarget); });
+  ['#c-search', '#c-filter'].forEach(function (s) { $(s).addEventListener('input', renderContracts); });
+  ['#p-search', '#p-filter'].forEach(function (s) { $(s).addEventListener('input', renderPosts); });
+
+  function setTab(t, push) {
+    state.tab = t;
+    ['vertraege', 'posts'].forEach(function (k) {
+      $('#tab-' + k).setAttribute('aria-selected', k === t);
+      $('#panel-' + k).hidden = k !== t;
+    });
+    if (push) { try { location.hash = t; } catch (e) { /* ignorieren */ } }
+  }
+  $('#tab-vertraege').addEventListener('click', function () { setTab('vertraege', true); });
+  $('#tab-posts').addEventListener('click', function () { setTab('posts', true); });
+  var hashTab = (location.hash || '').replace('#', '');
+  if (hashTab === 'posts' || hashTab === 'vertraege') setTab(hashTab, false);
+
+  $('#p-titel').addEventListener('input', updateSlug);
+  $('#p-search').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); openByName(); } });
+
+  function b64(buf) { var s = '', a = new Uint8Array(buf); for (var i = 0; i < a.length; i += 32768) s += String.fromCharCode.apply(null, a.subarray(i, i + 32768)); return btoa(s); }
+  function unb64(t) { var s = atob(t), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  $('#bk-save').addEventListener('click', async function () {
+    try {
+      var files = {}, ids = [];
+      state.contracts.concat(state.posts).forEach(function (x) { (x.docs || []).forEach(function (d) { if (ids.indexOf(d.id) < 0) ids.push(d.id); }); });
+      for (var i = 0; i < ids.length; i++) {
+        var b = await localAssets.get(ids[i]);
+        if (b) files[ids[i]] = { type: b.type, data: b64(await b.arrayBuffer()) };
+      }
+      var out = { app: 'handyvertraege', version: 1, erstellt: new Date().toISOString(), contracts: state.contracts, posts: state.posts, files: files };
+      saveFile('handyvertraege-sicherung-' + iso(new Date()) + '.json', JSON.stringify(out), 'application/json');
+      toast('Sicherung gespeichert');
+    } catch (e) { toast('Sicherung fehlgeschlagen.'); }
+  });
+  $('#bk-load').addEventListener('click', function () { $('#bk-file').click(); });
+  $('#bk-file').addEventListener('change', async function (ev) {
+    var f = ev.target.files[0]; ev.target.value = '';
+    if (!f) return;
+    try {
+      var d = JSON.parse(await f.text());
+      if (!d || d.app !== 'handyvertraege') throw 0;
+      var n = 0;
+      for (var id in (d.files || {})) { var x = d.files[id]; await localAssets.put(id, new Blob([unb64(x.data)], { type: x.type || 'application/octet-stream' })); }
+      ['contracts', 'posts'].forEach(function (kind) {
+        (d[kind] || []).forEach(function (rec) {
+          if (!rec || !rec.id) return;
+          var i = state[kind].findIndex(function (y) { return y.id === rec.id; });
+          if (i >= 0) state[kind][i] = rec; else state[kind].push(rec);
+          n++;
+        });
+        writeLocal(kind);
+      });
+      renderAll();
+      toast(n + ' Einträge geladen');
+    } catch (e) { toast('Diese Datei ist keine gültige Sicherung.'); }
+  });
+
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+  renderAll();
+  store.start();
+})();
+</script>
+
+</body></html>
